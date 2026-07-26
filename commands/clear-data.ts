@@ -32,10 +32,40 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       return interaction.editReply(`❌ ${targetUser.tag} does not have an active verification record.`);
     }
 
-    // Delete the record
+    // Delete the verified student record
     await prisma.verifiedStudent.delete({
       where: { user_id: targetUser.id }
     });
+
+    // Also clear the user's connected data (LinkedIn details, applications, etc.)
+    const userRecord = await prisma.user.findUnique({
+      where: { discord_id: targetUser.id }
+    });
+
+    if (userRecord) {
+      // Delete user's job applications
+      await prisma.jobApplication.deleteMany({ where: { user_id: userRecord.id } });
+      
+      // Delete user's saved searches
+      await prisma.savedSearch.deleteMany({ where: { user_id: userRecord.id } });
+      
+      // Delete user's connect requests (both sent and received)
+      await prisma.connectRequest.deleteMany({
+        where: { OR: [{ requester_id: userRecord.id }, { target_id: userRecord.id }] }
+      });
+      
+      // Delete user's reports
+      await prisma.report.deleteMany({ where: { reporter_id: userRecord.id } });
+      
+      // Nullify posted_by_user_id on their job postings to keep the job but anonymize it
+      await prisma.jobPosting.updateMany({
+        where: { posted_by_user_id: userRecord.id },
+        data: { posted_by_user_id: null }
+      });
+      
+      // Finally delete the user record
+      await prisma.user.delete({ where: { id: userRecord.id } });
+    }
 
     // Optionally attempt to remove roles if they are in the guild
     try {
@@ -60,9 +90,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       // Non-fatal, just means they might not be in the server or bot lacks perms
     }
 
-    await interaction.editReply(`✅ Successfully cleared the verification record for ${targetUser.tag}. They can now verify again.`);
+    await interaction.editReply(`✅ Successfully cleared the verification record and all connected data for ${targetUser.tag}. They can now verify again.`);
   } catch (error) {
     console.error('Error in clear-data command:', error);
-    await interaction.editReply('❌ There was an error trying to clear the verification data.');
+    await interaction.editReply('❌ There was an error trying to clear the data.');
   }
 }
