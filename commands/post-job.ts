@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ModalSubmitInteraction, EmbedBuilder, TextChannel } from 'discord.js';
 import { prisma } from '../database.js';
+import { randomUUID } from 'crypto';
 
 export const data = new SlashCommandBuilder()
  .setName('post-job')
@@ -89,17 +90,20 @@ export async function handleModalSubmit(interaction: ModalSubmitInteraction) {
  return;
  }
 
- const embed = new EmbedBuilder()
- .setTitle(`${title} at ${company}`)
- .setDescription(description)
- .setURL(applyUrl)
- .setColor('#FFD700')
- .setAuthor({ name: user.full_name || interaction.user.username, iconURL: user.profile_photo_url || undefined })
- .addFields(
- { name: 'Apply Here', value: applyUrl }
- )
- .setFooter({ text: `Expires on ${expiresAt.toDateString()}` })
- .setTimestamp();
+  const jobId = randomUUID();
+  const shortId = jobId.substring(0, 5).toUpperCase();
+
+  const embed = new EmbedBuilder()
+  .setTitle(`${title} at ${company}`)
+  .setDescription(description)
+  .setURL(applyUrl)
+  .setColor('#FFD700')
+  .setAuthor({ name: user.full_name || interaction.user.username, iconURL: user.profile_photo_url || undefined })
+  .addFields(
+  { name: 'Apply Here', value: applyUrl }
+  )
+  .setFooter({ text: `ID: ${shortId} • Expires on ${expiresAt.toDateString()}` })
+  .setTimestamp();
 
  if (tags.length > 0) {
  embed.addFields({ name: 'Tags', value: tags.join(', ') });
@@ -107,19 +111,20 @@ export async function handleModalSubmit(interaction: ModalSubmitInteraction) {
 
  const message = await channel.send({ embeds: [embed] });
 
- await prisma.jobPosting.create({
- data: {
- posted_by_user_id: user.id,
- title,
- company,
- description,
- apply_url: applyUrl,
- tags,
- channel_message_id: message.id,
- expires_at: expiresAt,
- guild_id: interaction.guildId
- }
- });
+  await prisma.jobPosting.create({
+  data: {
+  id: jobId,
+  posted_by_user_id: user.id,
+  title,
+  company,
+  description,
+  apply_url: applyUrl,
+  tags,
+  channel_message_id: message.id,
+  expires_at: expiresAt,
+  guild_id: interaction.guildId
+  }
+  });
 
  await interaction.reply({ content: `Job posted successfully in <#${jobsChannelId}>!`, ephemeral: true });
 }
