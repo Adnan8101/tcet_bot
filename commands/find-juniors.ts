@@ -35,7 +35,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
  }
 
  const embeds = juniors.map((user: any) => {
- const embed = new EmbedBuilder().setFooter({ text: 'Super Premium User' })
+ const embed = new EmbedBuilder().setFooter({ text: 'TCET AIML' })
  .setTitle(user.full_name || 'Anonymous Junior')
  .setColor('#FFD700')
  .addFields(

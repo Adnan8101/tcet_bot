@@ -23,7 +23,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
  return;
  }
 
- const embed = new EmbedBuilder().setFooter({ text: 'Super Premium User' })
+ const embed = new EmbedBuilder().setFooter({ text: 'TCET AIML' })
  .setTitle('Your Job Postings')
  .setColor('#FFD700');
 

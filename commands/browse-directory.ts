@@ -54,7 +54,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
  return;
  }
 
- const embed = new EmbedBuilder().setFooter({ text: 'Super Premium User' })
+ const embed = new EmbedBuilder().setFooter({ text: 'TCET AIML' })
  .setTitle('Alumni Directory')
  .setDescription(`Showing page ${page} of ${Math.ceil(total / pageSize)} (${total} total members)`)
  .setColor('#FFD700');

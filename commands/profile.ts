@@ -18,7 +18,7 @@ export const myProfileCommand = {
  ephemeral: true
  });
  }
- const embed = new EmbedBuilder().setFooter({ text: 'Super Premium User' })
+ const embed = new EmbedBuilder().setFooter({ text: 'TCET AIML' })
  .setTitle(`Profile: ${user.full_name || 'Unknown'}`)
  .setDescription(user.headline || 'No headline set')
  .setColor('#FFD700')

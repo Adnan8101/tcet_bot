@@ -62,7 +62,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
  const newEmbed = EmbedBuilder.from(oldEmbed)
  .setTitle(`[EXPIRED] ${oldEmbed.title}`)
  .setColor('#FFD700')
- .setFooter({ text: 'Super Premium User' });
+ .setFooter({ text: 'TCET AIML' });
  await message.edit({ embeds: [newEmbed], components: [] });
  }
  } catch (e) {

@@ -62,7 +62,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     return;
   }
 
-  const embed = new EmbedBuilder().setFooter({ text: 'Super Premium User' })
+  const embed = new EmbedBuilder().setFooter({ text: 'TCET AIML' })
     .setTitle('Job Listings')
     .setDescription(`Showing page ${page} (${total} total jobs found)`)
     .setColor('#FFD700');

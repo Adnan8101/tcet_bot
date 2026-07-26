@@ -62,7 +62,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
  }
  }
 
- const embed = new EmbedBuilder().setFooter({ text: 'Super Premium User' })
+ const embed = new EmbedBuilder().setFooter({ text: 'TCET AIML' })
  .setTitle(` Leaderboard - ${now.toLocaleString('default', { month: 'long' })}`)
  .setColor('#FFD700');
 

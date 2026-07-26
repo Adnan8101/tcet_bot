@@ -57,7 +57,7 @@ export async function handleReportModalSubmit(interaction: ModalSubmitInteractio
  if (modLogsChannelId) {
  const channel = interaction.client.channels.cache.get(modLogsChannelId) as TextChannel;
  if (channel) {
- const embed = new EmbedBuilder().setFooter({ text: 'Super Premium User' })
+ const embed = new EmbedBuilder().setFooter({ text: 'TCET AIML' })
  .setTitle('New Job Report')
  .addFields(
  { name: 'Job ID', value: jobId },

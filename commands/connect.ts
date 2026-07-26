@@ -20,7 +20,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
  const secureState = `${statePayload}.${hmac}`;
  const websiteUrl = process.env.WEBSITE_URL || 'https://aiml-discord.vercel.app';
  const connectUrl = `${websiteUrl}/auth/linkedin?state=${secureState}`;
- const embed = new EmbedBuilder().setFooter({ text: 'Super Premium User' })
+ const embed = new EmbedBuilder().setFooter({ text: 'TCET AIML' })
  .setTitle(' Connect LinkedIn')
  .setDescription('Click the link below to securely connect your LinkedIn account. This link is unique to you.')
  .setURL(connectUrl)

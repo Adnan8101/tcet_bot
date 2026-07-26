@@ -27,7 +27,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
  return;
  }
 
- const embed = new EmbedBuilder().setFooter({ text: 'Super Premium User' })
+ const embed = new EmbedBuilder().setFooter({ text: 'TCET AIML' })
  .setTitle(user.full_name || targetUser.tag)
  .setColor('#FFD700')
  .setThumbnail(user.profile_photo_url || targetUser.displayAvatarURL())
