@@ -24,6 +24,7 @@ import * as leaderboardCmd from './commands/leaderboard.js';
 import * as configCmd from './commands/config.js';
 import * as setupPanelCmd from './commands/setup-panel.js';
 import * as clearDataCmd from './commands/clear-data.js';
+import * as deletePanelCmd from './commands/delete-panel.js';
 import * as verifyHandler from './commands/verify-handler.js';
 
 import { startCronJobs } from './lib/cron.js';
@@ -57,7 +58,8 @@ const commands = [
   leaderboardCmd,
   configCmd,
   setupPanelCmd,
-  clearDataCmd
+  clearDataCmd,
+  deletePanelCmd
 ];
 
 client.once(Events.ClientReady, async (readyClient) => {

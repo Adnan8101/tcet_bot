@@ -250,8 +250,8 @@ async function importStudents() {
       const rollNo = parseInt(studentMatch[1], 10);
       const name = studentMatch[2].trim();
       
-      // Some Division C data doesn't have a Class specified in the text block, so infer it if missing.
-      const assignedClass = currentClass || `ST ${currentDivision}`;
+      // Assign all classes to TT (Third Year) based on division
+      const assignedClass = `TT ${currentDivision}`;
 
       studentsToInsert.push({
         division: currentDivision,
@@ -265,7 +265,7 @@ async function importStudents() {
   // Add Dummy Data
   studentsToInsert.push({
     division: 'A',
-    class: 'ST A',
+    class: 'TT A',
     roll_no: 100,
     name: 'ADNAN QURESHI'
   });

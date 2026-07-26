@@ -143,20 +143,7 @@ export async function handleConfirmVerifyButton(interaction: any) {
     return interaction.update({ content: '❌ Verification system is not configured for this server.', embeds: [], components: [] });
   }
 
-  let roleToAssignId: string | null = null;
-
-  // Determine specific role based on class
-  const studentClass = student.class.toUpperCase();
-  if (studentClass.includes('TT') || studentClass.includes('THIRD')) {
-    roleToAssignId = config.third_year_role_id;
-  } else if (studentClass.includes('ST') || studentClass.includes('SECOND')) {
-    roleToAssignId = config.second_year_role_id;
-  } else if (studentClass.includes('BT')) {
-    roleToAssignId = config.btech_role_id;
-  } else {
-    // Fallback: If it's a completely unknown class, we might just give them the alumni role or no specific role.
-    // For safety, if we don't recognize it but it's valid data, we might not assign a year specific role, just the verified role.
-  }
+  let roleToAssignId: string | null = config.third_year_role_id;
 
   try {
     const member = await interaction.guild?.members.fetch(interaction.user.id);

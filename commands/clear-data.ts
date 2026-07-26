@@ -49,10 +49,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const rolesManager = member.roles as GuildMemberRoleManager;
         const rolesToRemove = [
           config.verified_role_id,
-          config.third_year_role_id,
-          config.second_year_role_id,
-          config.btech_role_id,
-          config.alumni_role_id
+          config.third_year_role_id
         ].filter(Boolean) as string[];
 
         // Remove any associated verification roles they might have

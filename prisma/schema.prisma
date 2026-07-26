@@ -144,10 +144,8 @@ model VerificationConfig {
   guild_id            String @id
   verified_role_id    String
   third_year_role_id  String
-  second_year_role_id String
-  btech_role_id       String
-  alumni_role_id      String
   verify_channel_id   String
+  panel_message_id    String?
 
   @@map("verification_config")
 }
