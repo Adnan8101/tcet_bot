@@ -18,8 +18,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
  const requester = await prisma.user.findUnique({ where: { discord_id: interaction.user.id } });
  const targetUser = await prisma.user.findUnique({ where: { discord_id: targetDiscordUser.id } });
 
- if (!requester || !requester.linkedin_public_url) {
- await interaction.reply({ content: 'You must have a linked LinkedIn account to send connection requests.', ephemeral: true });
+ if (!requester || !requester.linkedin_sub) {
+ await interaction.reply({ content: 'You must have a linked LinkedIn account to send connection requests. Use `/connect-linkedin` first.', ephemeral: true });
+ return;
+ }
+
+ if (!requester.linkedin_public_url) {
+ await interaction.reply({ content: 'Add your public LinkedIn profile URL first with `/edit-directory-profile` so it can be shared when a connection is accepted.', ephemeral: true });
  return;
  }
 
@@ -116,13 +121,15 @@ export async function handleConnectButton(interaction: ButtonInteraction) {
  const target = await prisma.user.findUnique({ where: { id: request.target_id } });
 
  if (requester && target) {
+ const targetLinkedIn = target.linkedin_public_url || 'Not provided — ask them directly on Discord.';
+ const requesterLinkedIn = requester.linkedin_public_url || 'Not provided — ask them directly on Discord.';
  try {
  const requesterDiscord = await interaction.client.users.fetch(requester.discord_id);
- await requesterDiscord.send(`Your connection request to <@${target.discord_id}> was accepted!\nTheir LinkedIn: ${target.linkedin_public_url}`);
+ await requesterDiscord.send(`Your connection request to <@${target.discord_id}> was accepted!\nTheir LinkedIn: ${targetLinkedIn}`);
  } catch (e) {
  console.error('Could not DM requester', e);
  }
- await interaction.reply({ content: `You accepted the connection! Their LinkedIn is: ${requester.linkedin_public_url}`, ephemeral: true });
+ await interaction.reply({ content: `You accepted the connection! Their LinkedIn is: ${requesterLinkedIn}`, ephemeral: true });
  }
  } else {
  await prisma.connectRequest.update({

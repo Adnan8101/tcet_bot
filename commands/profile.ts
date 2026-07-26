@@ -62,6 +62,12 @@ export const editProfileCommand = {
  .setStyle(TextInputStyle.Paragraph)
  .setRequired(false)
  .setValue(user.skills_tags.join(', '));
+ const linkedinUrlInput = new TextInputBuilder()
+ .setCustomId('linkedinPublicUrl')
+ .setLabel('Public LinkedIn URL (for connections)')
+ .setStyle(TextInputStyle.Short)
+ .setRequired(false)
+ .setValue(user.linkedin_public_url || '');
  const directoryInput = new TextInputBuilder()
  .setCustomId('directoryVisible')
  .setLabel('Visible in Directory? (yes/no)')
@@ -77,6 +83,7 @@ export const editProfileCommand = {
  modal.addComponents(
  new ActionRowBuilder<TextInputBuilder>().addComponents(titleInput),
  new ActionRowBuilder<TextInputBuilder>().addComponents(skillsInput),
+ new ActionRowBuilder<TextInputBuilder>().addComponents(linkedinUrlInput),
  new ActionRowBuilder<TextInputBuilder>().addComponents(directoryInput),
  new ActionRowBuilder<TextInputBuilder>().addComponents(connectInput)
  );
@@ -86,16 +93,27 @@ export const editProfileCommand = {
 export async function handleModalSubmit(interaction: ModalSubmitInteraction) {
  const currentTitle = interaction.fields.getTextInputValue('currentTitle');
  const skillsTagsStr = interaction.fields.getTextInputValue('skillsTags');
+ const linkedinUrlStr = interaction.fields.getTextInputValue('linkedinPublicUrl').trim();
  const directoryVisibleStr = interaction.fields.getTextInputValue('directoryVisible').toLowerCase().trim();
  const openToConnectStr = interaction.fields.getTextInputValue('openToConnect').toLowerCase().trim();
  const skills_tags = skillsTagsStr.split(',').map(s => s.trim()).filter(s => s.length > 0);
  const directory_visible = ['yes', 'y', 'true', '1'].includes(directoryVisibleStr);
  const open_to_connect = ['yes', 'y', 'true', '1'].includes(openToConnectStr);
+
+ if (linkedinUrlStr.length > 0 && !/^https:\/\/([\w-]+\.)*linkedin\.com\//i.test(linkedinUrlStr)) {
+ await interaction.reply({
+ content: 'That doesn\'t look like a valid LinkedIn URL (must start with https://linkedin.com/ or https://www.linkedin.com/). Please try again with `/edit-directory-profile`.',
+ ephemeral: true
+ });
+ return;
+ }
+
  await prisma.user.update({
  where: { discord_id: interaction.user.id },
  data: {
  current_title: currentTitle,
  skills_tags: skills_tags,
+ linkedin_public_url: linkedinUrlStr.length > 0 ? linkedinUrlStr : null,
  directory_visible,
  open_to_connect
  }

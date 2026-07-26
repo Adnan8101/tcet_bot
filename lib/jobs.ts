@@ -7,6 +7,30 @@ export const redis = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : 
 const ADZUNA_APP_ID = process.env.ADZUNA_APP_ID;
 const ADZUNA_APP_KEY = process.env.ADZUNA_APP_KEY;
 
+export interface JobResult {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  salary: string;
+  description: string;
+  url: string;
+}
+
+// Adzuna's public API has no reliable single-job-by-id endpoint, so we remember
+// job details returned from a search and serve /job-details and /save-job from
+// that cache. Falls back to an in-memory map when Redis isn't configured.
+const JOB_DETAILS_TTL_SECONDS = 60 * 60; // 1 hour
+const localJobCache = new Map<string, { job: JobResult; expiresAt: number }>();
+
+async function cacheJobDetails(job: JobResult): Promise<void> {
+  if (redis) {
+    await redis.set(`job_details:${job.id}`, JSON.stringify(job), 'EX', JOB_DETAILS_TTL_SECONDS);
+  } else {
+    localJobCache.set(job.id, { job, expiresAt: Date.now() + JOB_DETAILS_TTL_SECONDS * 1000 });
+  }
+}
+
 export async function searchJobs(options: {
   keyword?: string;
   location?: string;
@@ -33,25 +57,24 @@ export async function searchJobs(options: {
     const res = await fetch(url);
     if (!res.ok) throw new Error('Failed to fetch from Adzuna');
     const data = await res.json();
-    return {
-      results: data.results.map((j: any) => ({
-        id: j.id,
-        title: j.title,
-        company: j.company?.display_name,
-        location: j.location?.display_name,
-        salary: j.salary_min && j.salary_max ? `£${j.salary_min} - £${j.salary_max}` : 'Not specified',
-        description: j.description,
-        url: j.redirect_url
-      })),
-      total: data.count
-    };
+    const results: JobResult[] = data.results.map((j: any) => ({
+      id: String(j.id),
+      title: j.title,
+      company: j.company?.display_name,
+      location: j.location?.display_name,
+      salary: j.salary_min && j.salary_max ? `£${j.salary_min} - £${j.salary_max}` : 'Not specified',
+      description: j.description,
+      url: j.redirect_url
+    }));
+    await Promise.all(results.map(cacheJobDetails));
+    return { results, total: data.count };
   } catch (error) {
     console.error('Error fetching jobs:', error);
     return { results: [], total: 0 };
   }
 }
 
-export async function getJobDetails(id: string) {
+export async function getJobDetails(id: string): Promise<JobResult | null> {
   if (!ADZUNA_APP_ID || !ADZUNA_APP_KEY) {
     return {
       id,
@@ -64,24 +87,24 @@ export async function getJobDetails(id: string) {
     };
   }
 
-  // NOTE: Adzuna does not have a single job fetch endpoint easily available without tracking links,
-  // typically we search for the specific ID or rely on the stored URL.
-  // For demonstration, we'll try a search with the ID as keyword or just return a generic fetch.
-  // Actually, Adzuna API v1 has a custom endpoint /jobs/{country}/job/{id} but it's not well documented.
-  // We'll fallback to a mock if we can't find it directly.
-  return {
-    id,
-    title: 'Job Details (Not fully supported by Adzuna API directly without search payload)',
-    company: 'Unknown',
-    location: 'Unknown',
-    salary: 'Unknown',
-    description: 'Please view the original job posting for full details.',
-    url: '#'
-  };
+  // Adzuna has no reliable single-job-by-id endpoint, so we rely on details cached
+  // from a prior /browse-jobs search (see cacheJobDetails above). If the job was
+  // never searched for in this window, or the cache entry expired, we have no data.
+  if (redis) {
+    const cached = await redis.get(`job_details:${id}`);
+    return cached ? (JSON.parse(cached) as JobResult) : null;
+  }
+  const entry = localJobCache.get(id);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    localJobCache.delete(id);
+    return null;
+  }
+  return entry.job;
 }
 
 function generateMockJobs(page: number, keyword?: string, location?: string) {
-  const results = [];
+  const results: JobResult[] = [];
   for (let i = 1; i <= 5; i++) {
     const id = `${page}-${i}`;
     results.push({

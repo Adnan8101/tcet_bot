@@ -7,9 +7,9 @@ export const data = new SlashCommandBuilder()
  .setDescription('Your role tier')
  .setRequired(true)
  .addChoices(
- { name: 'Junior', value: 'Junior' },
- { name: 'Senior', value: 'Senior' },
- { name: 'Alumnus', value: 'Alumnus' }
+ { name: 'Junior', value: 'junior' },
+ { name: 'Senior', value: 'senior' },
+ { name: 'Alumnus', value: 'alumnus' }
  ));
 export async function execute(interaction: ChatInputCommandInteraction) {
  const user = await prisma.user.findUnique({ where: { discord_id: interaction.user.id } });
@@ -19,6 +19,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
  ephemeral: true
  });
  }
+ // Stored lowercase so it matches the role_tier filters used by /find-seniors,
+ // /find-juniors, /browse-directory and the /post-job permission check.
  const tier = interaction.options.getString('tier', true);
  await prisma.user.update({
  where: { discord_id: interaction.user.id },
@@ -27,7 +29,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
  }
  });
  await interaction.reply({
- content: `Your role tier has been set to **${tier}**.`,
+ content: `Your role tier has been set to **${tier.charAt(0).toUpperCase()}${tier.slice(1)}**.`,
  ephemeral: true
  });
 }

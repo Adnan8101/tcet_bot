@@ -26,6 +26,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
  // Since Adzuna job IDs are strings and might be different from our uuid, we store it in job_url or create a separate field.
  // We will use job_url as the unique identifier for external jobs if it's the Adzuna URL.
  const job = await getJobDetails(jobId);
+ if (!job) {
+ await interaction.editReply('Could not find that job. It may have expired from cache — try `/browse-jobs` again and use the ID shown there.');
+ return;
+ }
  const existing = await prisma.jobApplication.findFirst({
  where: {
  user_id: user.id,

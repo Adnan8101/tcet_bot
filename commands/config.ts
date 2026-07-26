@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionsBitField } from 'discord.js';
+import { ChannelType, SlashCommandBuilder, ChatInputCommandInteraction, PermissionsBitField } from 'discord.js';
 import { prisma } from '../database.js';
 
 export const data = new SlashCommandBuilder()
@@ -7,9 +7,11 @@ export const data = new SlashCommandBuilder()
  .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild)
  .addChannelOption(option => option.setName('jobs_channel')
  .setDescription('Channel where jobs will be posted')
+ .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
  .setRequired(false))
  .addChannelOption(option => option.setName('mod_logs_channel')
  .setDescription('Channel where reports and logs are sent')
+ .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
  .setRequired(false))
  .addRoleOption(option => option.setName('admin_role')
  .setDescription('Role that grants admin access to bot commands')

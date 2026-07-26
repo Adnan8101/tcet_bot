@@ -15,6 +15,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
  try {
  const job = await getJobDetails(jobId);
+ if (!job) {
+ await interaction.editReply('Could not find that job. It may have expired from cache — try `/browse-jobs` again and use the ID shown there.');
+ return;
+ }
  // Check if it's stored in our DB to increment view count (assuming we store local jobs too)
  // If it's a completely external Adzuna job we might just not have a DB record yet unless saved.
  // For now we'll just show the details.

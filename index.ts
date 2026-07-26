@@ -73,33 +73,52 @@ client.once(Events.ClientReady, async (readyClient) => {
   }
 });
 
+async function replyWithError(interaction: Interaction): Promise<void> {
+  if (!interaction.isRepliable()) return;
+  const content = 'There was an error while processing that. Please try again.';
+  try {
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp({ content, ephemeral: true });
+    } else {
+      await interaction.reply({ content, ephemeral: true });
+    }
+  } catch (replyError) {
+    console.error('Could not send error response to interaction', replyError);
+  }
+}
+
 client.on(Events.InteractionCreate, async (interaction: Interaction) => {
-  if (interaction.isChatInputCommand()) {
-    const command = commands.find(c => c.data.name === interaction.commandName);
-    if (!command) return;
-    try {
+  try {
+    if (interaction.isChatInputCommand()) {
+      const command = commands.find(c => c.data.name === interaction.commandName);
+      if (!command) return;
       await command.execute(interaction as any);
-    } catch (error) {
-      console.error(error);
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
-      } else {
-        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    } else if (interaction.isModalSubmit()) {
+      if (interaction.customId === 'editProfileModal') {
+        await profileCmd.handleModalSubmit(interaction);
+      } else if (interaction.customId === 'postJobModal') {
+        await postJobCmd.handleModalSubmit(interaction);
+      } else if (interaction.customId.startsWith('reportModal_')) {
+        await reportListingCmd.handleReportModalSubmit(interaction);
+      }
+    } else if (interaction.isButton()) {
+      if (interaction.customId.startsWith('accept_connect_') || interaction.customId.startsWith('decline_connect_')) {
+        await requestConnectCmd.handleConnectButton(interaction as any);
       }
     }
-  } else if (interaction.isModalSubmit()) {
-    if (interaction.customId === 'editProfileModal') {
-      await profileCmd.handleModalSubmit(interaction);
-    } else if (interaction.customId === 'postJobModal') {
-      await postJobCmd.handleModalSubmit(interaction);
-    } else if (interaction.customId.startsWith('reportModal_')) {
-      await reportListingCmd.handleReportModalSubmit(interaction);
-    }
-  } else if (interaction.isButton()) {
-    if (interaction.customId.startsWith('accept_connect_') || interaction.customId.startsWith('decline_connect_')) {
-      await requestConnectCmd.handleConnectButton(interaction as any);
-    }
+  } catch (error) {
+    console.error('Error handling interaction:', error);
+    await replyWithError(interaction);
   }
+});
+
+// A single failed DB call or Discord API error inside an interaction handler must never
+// take the whole process down — log it and keep the bot alive.
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err);
 });
 
 client.login(process.env.DISCORD_BOT_TOKEN);
