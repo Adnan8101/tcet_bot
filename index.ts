@@ -22,6 +22,8 @@ import * as reportListingCmd from './commands/report-listing.js';
 import * as verifySeniorCmd from './commands/verify-senior.js';
 import * as leaderboardCmd from './commands/leaderboard.js';
 import * as configCmd from './commands/config.js';
+import * as setupPanelCmd from './commands/setup-panel.js';
+import * as verifyHandler from './commands/verify-handler.js';
 
 import { startCronJobs } from './lib/cron.js';
 
@@ -52,7 +54,8 @@ const commands = [
   reportListingCmd,
   verifySeniorCmd,
   leaderboardCmd,
-  configCmd
+  configCmd,
+  setupPanelCmd
 ];
 
 client.once(Events.ClientReady, async (readyClient) => {
@@ -100,10 +103,16 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         await postJobCmd.handleModalSubmit(interaction);
       } else if (interaction.customId.startsWith('reportModal_')) {
         await reportListingCmd.handleReportModalSubmit(interaction);
+      } else if (interaction.customId === 'verify_modal') {
+        await verifyHandler.handleVerifyModalSubmit(interaction);
       }
     } else if (interaction.isButton()) {
       if (interaction.customId.startsWith('accept_connect_') || interaction.customId.startsWith('decline_connect_')) {
         await requestConnectCmd.handleConnectButton(interaction as any);
+      } else if (interaction.customId === 'verify_button') {
+        await verifyHandler.handleVerifyButton(interaction);
+      } else if (interaction.customId === 'cancel_verify' || interaction.customId.startsWith('confirm_verify_')) {
+        await verifyHandler.handleConfirmVerifyButton(interaction);
       }
     }
   } catch (error) {
