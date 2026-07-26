@@ -18,7 +18,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
  })).toString('base64');
  const hmac = crypto.createHmac('sha256', process.env.ENCRYPTION_KEY!).update(statePayload).digest('hex');
  const secureState = `${statePayload}.${hmac}`;
- const websiteUrl = process.env.WEBSITE_URL || 'http://localhost:3000';
+ const websiteUrl = process.env.WEBSITE_URL || 'https://aiml-discord.vercel.app';
  const connectUrl = `${websiteUrl}/auth/linkedin?state=${secureState}`;
  const embed = new EmbedBuilder().setFooter({ text: 'Super Premium User' })
  .setTitle(' Connect LinkedIn')
